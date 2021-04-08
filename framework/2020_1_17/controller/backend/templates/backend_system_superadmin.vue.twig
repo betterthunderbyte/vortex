@@ -1,0 +1,64 @@
+<div id="backend-member-superadmin-view-app">
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Vorname</th>
+                    <th>Nachname</th>
+                    <th>E-Mail</th>
+                    <th>Aktion</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="member in members">
+                    <td>[[member.be_member_pk]]</td>
+                    <td>[[member.given_name]]</td>
+                    <td>[[member.surname]]</td>
+                    <td>[[member.email]]</td>
+                    <td>
+                        <button v-show="!member.admin" v-on:click="make_admin(member)" class="button is-danger">hinzufügen</button>
+                        <button v-show="member.admin" v-on:click="remove_admin(member)" class="button is-success">entfernen</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+<script>
+    window.backend_app_member_superadmin_view = new Vue({
+        el: '#backend-member-superadmin-view-app',
+        delimiters: ["[[","]]"],
+        data: {
+            loading:false,
+            members:{{ to_json_object(members) | raw }}
+        },
+        methods:{
+            make_admin:function (member) {
+                this.loading = true;
+                axios.patch('/backend/app/system/superadmin/' + member.be_member_pk)
+                    .then(response => {
+                        member.admin = true;
+                    })
+                    .catch(error => {
+
+                    }).finally(() => {
+                    this.loading = false;
+                });
+            },
+            remove_admin:function (member) {
+                this.loading = true;
+                axios.delete('/backend/app/system/superadmin/' + member.be_member_pk)
+                    .then(response => {
+                        member.admin = false;
+                    })
+                    .catch(error => {
+
+                    }).finally(() => {
+                    this.loading = false;
+                });
+            }
+        }
+    });
+</script>

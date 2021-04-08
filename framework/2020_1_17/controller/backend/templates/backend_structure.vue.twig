@@ -1,0 +1,119 @@
+{#
+<script>
+    Vue.component('insert-tag', {
+        data:function () {
+            return {
+                edit:false,
+                loading:false,
+                real_content:this.content
+            }
+        },
+        methods:{
+            save:function () {
+                this.loading = true;
+                console.log({ content: this.real_content });
+                axios.post('/backend/api/insert_tag/' + this.id, { content: this.real_content })
+                .then(response => {
+                    this.edit = false;
+                })
+                .catch(error => {
+                }).finally(() => {
+                    this.loading = false;
+                });
+            }
+        },
+        props:['alias', 'id', 'content'],
+        delimiters: ["[[","]]"],
+        template: '<span><span v-show="!edit">[[real_content]]  <a v-on:click.prevent="edit = true"><span class="mdi mdi-pencil icon is-small"></span></a></span>' +
+         '<div class="field has-addons" v-show="edit">' +
+            '  <div class="control is-expanded">' +
+            '    <input class="input is-small is-rounded" type="text" v-bind:value="real_content" v-on:input="real_content = $event.target.value">' +
+            '  </div>' +
+            '  <div class="control">' +
+            '    <a class="button is-small is-rounded is-outlined" v-bind:class="{\'is-loading\' : loading}" v-on:click.prevent="save()">' +
+            '      Speichern' +
+            '    </a>' +
+            '  </div>' +
+            '</div>' +
+         '</span>'
+    });
+
+</script>#}
+<section class="hero is-fullheight is-white">
+    <div class="hero-head">
+        <nav id="backend-navbar-app" class="navbar">
+            <div class="navbar-brand">
+                <p class="navbar-item">Vortex - Framework</p>
+                <a role="button" class="navbar-burger" v-bind:class="burger_menu_open ? 'is-active' : ''" v-on:click.prevent="burger_menu_open = !burger_menu_open" aria-label="menu" aria-expanded="false">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+            <div class="navbar-menu" v-bind:class="burger_menu_open ? 'is-active' : ''">
+                <div class="navbar-end">
+                    <a class="navbar-item" href="/{{ current_controller }}/logout"><span>Abmelden</span></a>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div class="hero-body has-background-light">
+        <div class="container is-fluid">
+            <div class="columns is-2">
+                <div id="backend-menu-app" >
+                    <aside class="menu">
+                        <div v-for="menu in structure">
+                            <p class="menu-label">
+                                [[menu.label]]
+                            </p>
+                            <ul class="menu-list">
+                                <li v-for="menu_child in menu.items">
+                                    <a v-bind:class="url.startsWith(menu_child.link) ? 'is-active' : ''" v-bind:href="menu_child.link">
+                                        [[menu_child.label]]
+                                    </a>
+                                    <ul v-if="menu_child.items">
+                                        <li v-for="menu_child_child in menu_child.items">
+                                            <a v-bind:class="url.startsWith(menu_child_child.link) ? 'is-active' : ''" v-bind:href="menu_child_child.link">
+                                               [[menu_child_child.label]]
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </aside>
+                </div>
+                <div class="column is-10">
+                    {{ body | raw }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-foot">
+        <footer class="footer">
+            <div class="container">
+                <div class="content has-text-centered">
+                    VORTEX Framework @ {{ current_version }}
+                </div>
+            </div>
+        </footer>
+    </div>
+</section>
+<script>
+    window.backend_app_navbar = new Vue({
+        el: '#backend-navbar-app',
+        delimiters: ["[[","]]"],
+        data: {
+            burger_menu_open:false
+        }
+    });
+
+    window.backend_app_menu = new Vue({
+        el: '#backend-menu-app',
+        delimiters: ["[[","]]"],
+        data: {
+            url:window.location.pathname,
+            structure:{{ to_json_object(menu) | raw }}
+        }
+    });
+</script>

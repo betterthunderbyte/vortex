@@ -1,0 +1,27 @@
+
+<div class="columns is-centered">
+    <div class="column is-4">
+        <form method="post">
+            <input type="hidden" name="submit" value="true">
+            <div class="field">
+                <label class="label">Updateserver Adresse:</label>
+                <div class="control">
+                    <input name="update_server_address" class="input" type="text" placeholder="us.vortex.de" value="{{ config.getUpdateServerAddress() }}">
+                </div>
+                <p class="help">Die Adresse zum Updateserver.</p>
+            </div>
+
+            <div class="field">
+                <label class="label">Produktschlüssel:</label>
+                <div class="control">
+                    <input name="product_key" class="input" type="text" placeholder="XXXXXX-XXXXXX-XXXXXX-XXXXXX" value="{{ config.getProductKey() }}">
+                </div>
+                <p class="help">Der Produktschlüssel um diese Software zu registrieren.</p>
+            </div>
+
+            <div class="control">
+                <button class="button is-primary">Weiter</button>
+            </div>
+        </form>
+    </div>
+</div>

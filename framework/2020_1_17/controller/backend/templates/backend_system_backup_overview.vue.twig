@@ -1,0 +1,121 @@
+<div id="backend-backup-overview-app">
+    <div class="notification is-danger" v-show="show_error_message">
+        <button class="delete" v-on:click="show_error_message = false"></button>
+        [[error_message_content]]
+    </div>
+    <nav class="level">
+        <div class="level-left">
+            <p class="level-item">Backups</p>
+
+            <div class="level-item">
+                <div class="field has-addons">
+                    <p class="control">
+                        <label>
+                            <input class="input" type="text" placeholder="Backup finden">
+                        </label>
+                    </p>
+                    <p class="control">
+                        <button class="button">
+                            Suchen
+                        </button>
+                    </p>
+                </div>
+            </div>
+            <a class="level-item" href="#" v-on:click.prevent="create_backup()">Neu</a>
+        </div>
+
+        <div class="level-right">
+            <div class="level-item select">
+                <label>
+                    <select>
+                        <option>10</option>
+                        <option>25</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+    </nav>
+    <div class="table-container">
+        <table class="table is-bordered is-striped is-fullwidth">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Version</th>
+                <th>Zeitpunkt</th>
+                <th>Aktion</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="(backup, index) in backups" >
+                <td>[[index]]</td>
+                <td>[[backup.version]]</td>
+                <td>[[backup.time]]</td>
+                <td><button class="button is-small is-danger">löschen</button> <button class="button is-small is-info">laden</button></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <nav class="pagination is-rounded" role="navigation" aria-label="pagination">
+        <a class="pagination-previous">Vorige Seite</a>
+        <a class="pagination-next">Nächste Seite</a>
+        <ul class="pagination-list">
+
+        </ul>
+    </nav>
+</div>
+<script>
+    window.backend_backup_overview_app = new Vue({
+        el: '#backend-backup-overview-app',
+        delimiters: ["[[","]]"],
+        data: {
+            loading:false,
+            backups:[],
+            show_error_message:false,
+            error_message_content:"",
+        },
+        methods:{
+            create_backup:function() {
+                this.loading = false;
+                axios.post('/backend/app/system/api/create_backup')
+                    .then(response => {
+
+                    })
+                    .catch(error => {
+
+                    }).finally(() => {
+                    this.loading = false;
+                });
+            },
+            insert_member:function () {
+                this.loading = true;
+                this.show_error_message = false;
+                axios.post('/backend/app/admin/api/member', this.insert_member_data)
+                    .then(response => {
+                        this.members.push(response.data);
+                    })
+                    .catch(error => {
+                        this.member_modal_error = true;
+                        this.member_modal_error_message = error.response.data.message;
+                    }).finally(() => {
+                    this.loading = false;
+                });
+            },
+            delete_member:function (id, index) {
+                this.loading = true;
+                this.show_error_message = false;
+                axios.delete('/backend/app/admin/api/member/' + id)
+                    .then(response => {
+                        this.members.splice(index, 1);
+                    })
+                    .catch(error => {
+                        this.show_error_message = true;
+                        this.error_message = error.response.data.message;
+                    }).finally(() => {
+                    this.loading = false;
+                });
+            }
+        }
+    });
+</script>

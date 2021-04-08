@@ -1,0 +1,112 @@
+
+<div class="columns is-centered">
+    <div class="content">
+        <h2>Status</h2>
+    </div>
+</div>
+<div id="database_form">
+    <div class="columns is-centered">
+        <div class="column is-4">
+            <progress v-show="loading" class="progress is-small" v-bind:class="success ? 'is-success' : 'is-danger'" max="100" style="margin-bottom: 0"></progress>
+            <progress v-show="!loading" class="progress is-small" v-bind:class="success ? 'is-success' : 'is-danger'" value="100" max="100" style="margin-bottom: 0"></progress>
+        </div>
+    </div>
+    <div class="columns is-centered">
+        <div class="column is-4">
+            <form method="post">
+                <input type="hidden" name="submit" value="true">
+                <div class="field">
+                    <div class="field">
+                        <label class="label">Addresse:</label>
+                        <div class="control">
+                            <input name="host" v-model="host" v-on:keyup="checkConnection" class="input" type="text" placeholder="127.0.0.1">
+                        </div>
+                        <p class="help">Die Addresse zum Datenbankserver.</p>
+                    </div>
+                    <div class="field">
+                        <label class="label">Datenbankname:</label>
+                        <div class="control">
+                            <input name="name" v-model="name" v-on:keyup="checkConnection" class="input" type="text" placeholder="vortex">
+                        </div>
+                        <p class="help">Der Name der Datenbank.</p>
+                    </div>
+                    <div class="field">
+                        <label class="label">Benutzer:</label>
+                        <div class="control">
+                            <input name="user" v-model="user" v-on:keyup="checkConnection" class="input" type="text" placeholder="root">
+                        </div>
+                        <p class="help">Der Benutzer auf den Datenbankserver mit genug rechten.</p>
+                    </div>
+                    <div class="field">
+                        <label class="label">Passwort:</label>
+                        <div class="control">
+                            <input name="password" v-model="password" v-on:keyup="checkConnection" class="input" type="password">
+                        </div>
+                        <p class="help">Das Passwort von der Datenbank.</p>
+                    </div>
+                    <div class="control">
+                        <button class="button is-primary">Backend installieren</button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+<script>
+    var database_app = null;
+    $(document).ready(function(){
+        database_app = new Vue({
+            delimiters: ['{v', 'v}'],
+            el: '#database_form',
+            data:{
+                loading: false,
+                success: false,
+                {% if config.getRuntime() == 'development' %}
+                host:{{ config.getTestHost() }},
+                name:'{{ config.getTestDatabase() }}',
+                user:'{{ config.getTestUser() }}',
+                password:'{{ config.getTestPassword() }}'
+                {% else %}
+                host:'{{ config.getDefaultHost() }}',
+                name:'{{ config.getDefaultDatabase() }}',
+                user:'{{ config.getDefaultUser() }}',
+                password:'{{ config.getDefaultPassword() }}'
+                {% endif %}
+
+            },
+            methods: {
+                checkConnection:function() {
+                    this.warning = false;
+                    $.ajax({
+                        url: "{{controller_url}}/api/connection/check",
+                        cache: false,
+                        method:'POST',
+                        data: JSON.stringify({
+                            host:this.host,
+                            name:this.name,
+                            user:this.user,
+                            password:this.password
+                        }),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function(result){
+                            database_app.loading = false;
+                            database_app.success = result['successful'];
+                        },
+                        beforeSend: function(){
+                            database_app.loading = true;
+                            database_app.success = false;
+                        },
+                        error: function(xhr, textStatus, errorThrown){
+                            database_app.loading = false;
+                            database_app.success = false;
+                        }
+                    });
+                }
+            }
+        });
+
+        database_app.checkConnection();
+    });
+</script>

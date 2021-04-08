@@ -1,0 +1,33 @@
+{
+  "name": "jeamu/vortex",
+  "description": "CMS",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Thorben Beitlich",
+      "email": "thorben.beitlich@kuhlmann-its.de"
+    }
+  ],
+  "require": {
+    "altorouter/altorouter": "dev-master#f6fede4f94ced7c22ba63a9b8af0bf2dc38e3cb2",
+    "ext-mbstring": "*",
+    "ext-pdo": "*",
+    "ext-json": "*",
+    "erusev/parsedown": "^1.7",
+    "dompdf/dompdf": "^0.8.3",
+    "ext-openssl": "*",
+    "twig/twig": "^3.0",
+    "swiftmailer/swiftmailer": "^6.2",
+    "php-imap/php-imap": "^3.0",
+    "php-curl-class/php-curl-class": "^8.6",
+    "fzaninotto/faker": "^1.9",
+    "maennchen/zipstream-php": "^2.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9"
+  },
+  "config": {
+    "optimize-autoloader": true
+  }
+}

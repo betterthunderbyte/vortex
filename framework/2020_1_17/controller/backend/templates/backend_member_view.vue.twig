@@ -1,0 +1,199 @@
+<div id="backend-member-view-app">
+    <div class="notification is-danger" v-show="show_error_message">
+        <button class="delete" v-on:click="show_error_message = false"></button>
+        [[error_message]]
+    </div>
+    <nav class="level">
+        <div class="level-left">
+            <p class="level-item">Mitglieder</p>
+
+            <div class="level-item">
+                <div class="field has-addons">
+                    <p class="control">
+                        <label>
+                            <input class="input" type="text" placeholder="Mitglied finden">
+                        </label>
+                    </p>
+                    <p class="control">
+                        <button class="button">
+                            Suchen
+                        </button>
+                    </p>
+                </div>
+            </div>
+            <a class="level-item" href="#" v-on:click.prevent="is_create_member_modal_open = true">Neu</a>
+        </div>
+
+        <div class="level-right">
+            <div class="level-item select">
+                <label>
+                    <select>
+                        <option>10</option>
+                        <option>25</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+    </nav>
+    <div class="table-container">
+        <table class="table is-bordered is-striped is-fullwidth">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Vorname</th>
+                <th>Nachname</th>
+                <th>E-Mail</th>
+                <th>Aktiv</th>
+                <th>Aktion</th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(member, index) in members" v-bind:id="member.be_member_pk">
+                    <td>[[member.be_member_pk]]</td>
+                    <td>[[member.given_name]]</td>
+                    <td>[[member.surname]]</td>
+                    <td>[[member.email]]</td>
+                    <td><p v-if="member.active">ja</p><p v-if="!member.active">nein</p></td>
+                    <td>
+                        <button class="button is-small is-danger" v-on:click="delete_member(member.be_member_pk, index)">löschen</button>
+                        <button class="button is-small is-info" v-on:click="">Passwort ändern</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <nav class="pagination is-rounded" role="navigation" aria-label="pagination">
+        <a class="pagination-previous">Vorige Seite</a>
+        <a class="pagination-next">Nächste Seite</a>
+        <ul class="pagination-list">
+
+        </ul>
+    </nav>
+
+    <div class="modal is-active" v-show="is_create_member_modal_open">
+        <div class="modal-background" v-on:click="is_create_member_modal_open = false"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Neues Mitglied</p>
+                <button class="delete" aria-label="close" v-on:click="is_create_member_modal_open = false"></button>
+            </header>
+            <section class="modal-card-body">
+                <div class="notification is-danger" v-show="member_modal_error">
+                    <button class="delete" v-on:click="member_modal_error = false"></button>
+                    [[member_modal_error_message]]
+                </div>
+                <form>
+                    <div class="field">
+                        <label class="label">Vorname</label>
+                        <div class="control">
+                            <label>
+                                <input class="input" type="text" v-model="insert_member_data.given_name">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Nachname</label>
+                        <div class="control">
+                            <label>
+                                <input class="input" type="text" v-model="insert_member_data.surname">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">E-Mail</label>
+                        <div class="control">
+                            <label>
+                                <input class="input" type="text" v-model="insert_member_data.email">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Passwort</label>
+                        <div class="control">
+                            <label>
+                                <input class="input" type="text" v-model="insert_member_data.password">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="control">
+                            <label class="checkbox">
+                                <input type="checkbox" v-model="insert_member_data.renew_password">
+                                soll das Passwort ändern beim anmelden
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" v-on:click="insert_member()">Erstellen</button>
+                <button class="button" v-on:click="is_create_member_modal_open = false">Abbrechen</button>
+            </footer>
+
+        </div>
+    </div>
+</div>
+<script>
+    window.backend_app_member_view = new Vue({
+        el: '#backend-member-view-app',
+        delimiters: ["[[","]]"],
+        data: {
+            loading:false,
+            members:[],
+            is_create_member_modal_open:false,
+            insert_member_data:{
+                email:"",
+                password:"",
+                given_name:"",
+                surname:"",
+                renew_password:false
+            },
+            show_error_message:false,
+            error_message:"",
+            member_modal_error:false,
+            member_modal_error_message:"",
+            change_password_modal_is_open:false,
+        },
+        methods:{
+            insert_member:function () {
+                this.loading = true;
+                this.show_error_message = false;
+                axios.post('/backend/app/admin/api/member', this.insert_member_data)
+                .then(response => {
+                    this.members.push(response.data);
+                })
+                .catch(error => {
+                    this.member_modal_error = true;
+                    this.member_modal_error_message = error.response.data.message;
+                }).finally(() => {
+                    this.loading = false;
+                });
+            },
+            delete_member:function (id, index) {
+                this.loading = true;
+                this.show_error_message = false;
+                axios.delete('/backend/app/admin/api/member/' + id)
+                    .then(response => {
+                        this.members.splice(index, 1);
+                    })
+                    .catch(error => {
+                        this.show_error_message = true;
+                        this.error_message = error.response.data.message;
+                    }).finally(() => {
+                    this.loading = false;
+                });
+            },
+            open_change_password_modal:function (member) {
+
+            }
+        }
+    });
+
+    window.backend_app_member_view.members = {{to_json_object(members) | raw}};
+</script>

@@ -1,0 +1,79 @@
+<div>
+    <div class="columns is-multiline">
+        <div class="column is-half">
+            <h1 class="title">Grundlegende Information</h1>
+            <h2 class="subtitle">Hier kannst du deine Personlichen Informationen ändern.</h2>
+
+            {% if member_update_error %}
+                <div class="notification is-danger">
+                    {{ member_update_error }}
+                </div>
+            {% endif %}
+        </div>
+        <div class="column is-half box has-background-white">
+            <form method="post">
+                <input type="hidden" name="submit_member_data">
+                <div class="field">
+                    <label for="given_name_field" class="label">Vorname</label>
+                    <div class="control">
+                        <input id="given_name_field" name="given_name" class="input" type="text" value="{{ member.given_name }}">
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="surname_field" class="label">Nachname</label>
+                    <div class="control">
+                        <input id="surname_field" name="surname" class="input" type="text" value="{{ member.surname }}">
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="email_field" class="label">E-Mail</label>
+                    <div class="control">
+                        <input id="email_field" name="email" class="input" type="text" value="{{ member.email }}">
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <button type="submit" class="button is-success">Ändern</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="column is-half">
+            <h1 class="title">Passwort ändern</h1>
+            <h2 class="subtitle">Hier kannst du dein Passwort ändern. Denk dran die Mindestlänge von 8 Zeichen zu erfüllen.</h2>
+
+            {% if renew_password_error %}
+            <div class="notification is-danger">
+                {{ renew_password_error }}
+            </div>
+            {% endif %}
+        </div>
+        <div class="column is-half box has-background-white">
+            <form method="post">
+                <input type="hidden" name="submit_password_renew">
+                <div class="field">
+                    <label for="first_password_field" class="label">Passwort</label>
+                    <div class="control">
+                        <input id="first_password_field" name="first_password" class="input" type="password" >
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="second_password_field" class="label">Passwort wiederholen</label>
+                    <div class="control">
+                        <input id="second_password_field" name="second_password" class="input" type="password">
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <button type="submit" class="button is-success">Passwort ändern</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+<script>
+
+</script>

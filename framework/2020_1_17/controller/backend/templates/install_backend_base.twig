@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <link rel="icon" href="{{ base_url }}/assets/favicon.svg" type="image/svg+xml">
+
+        <title>{{title}}</title>
+
+        <link rel="stylesheet" href="//cdn.materialdesignicons.com/4.7.95/css/materialdesignicons.min.css">
+
+        <link href="https://fonts.googleapis.com/css?family=Nunito&display=swap" rel="stylesheet">
+
+        <link rel="stylesheet" href="{{ base_url }}/assets/bulma.css">
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+        {% if debug_available %}
+            <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        {% else %}
+            <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+        {% endif %}
+    </head>
+    <body>
+        <section class="hero is-info" style="margin-bottom: 50px;">
+            <div class="hero-head">
+                <nav class="navbar">
+                    <div class="container">
+                        <div class="navbar-brand">
+                            <a class="navbar-item">
+                                <img src="{{ base_url }}/assets/favicon.svg" alt="Vortex Framework Backend">
+                            </a>
+                            <span class="navbar-burger burger" data-target="navbarMenuHeroB">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </span>
+
+                        </div>
+                        <div id="navbarMenuHeroB" class="navbar-menu">
+                            <div class="navbar-end">
+                                <a class="navbar-item">
+                                    Hilfe
+                                </a>
+                                <a class="navbar-item">
+                                    Dokumentation
+                                </a>
+                                <span class="navbar-item">
+                                    <a class="button is-info is-inverted" href="/{{current_controller}}/logout">
+                                        <span>Abmelden</span>
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="hero-body">
+                <div class="container has-text-centered">
+                    <p class="title">
+                        {{ hero_title }}
+                    </p>
+                    <p class="subtitle">
+                        {{ hero_subtitle }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="hero-foot">
+                <nav class="tabs is-boxed is-fullwidth">
+                    <div class="container">
+                        <ul>
+                            <li {% if menu == "step1" %}class="is-active"{% endif %}>
+                                <a href="/{{current_controller}}/step1">Datenbankverbindung</a>
+                            </li>
+                            <li {% if menu == "finalize" %}class="is-active"{% endif %}>
+                                <a href="/{{current_controller}}/finalize">Abschluss</a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </section>
+        {{ body | raw }}
+    </body>
+</html>

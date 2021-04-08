@@ -1,0 +1,192 @@
+<div id="backend-group-view-app">
+    <nav class="level">
+        <div class="level-left">
+            <p class="level-item">Gruppen</p>
+
+            <div class="level-item">
+                <div class="field has-addons">
+                    <p class="control">
+                        <label>
+                            <input class="input" type="text" placeholder="Gruppe finden">
+                        </label>
+                    </p>
+                    <p class="control">
+                        <button class="button">
+                            Suchen
+                        </button>
+                    </p>
+                </div>
+            </div>
+            <a class="level-item" href="#" v-on:click.prevent="is_create_group_modal_open = true">Neu</a>
+        </div>
+
+        <div class="level-right">
+            <div class="level-item select">
+                <label>
+                    <select>
+                        <option>10</option>
+                        <option>25</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+    </nav>
+    <div class="table-container">
+        <table class="table is-bordered is-striped is-fullwidth">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Alias</th>
+                    <th>Titel</th>
+                    <th>Beschreibung</th>
+                    <th>Aktion</th>
+                </tr>
+            </thead>
+            <tbody v-for="(group, index) in groups" v-bind:key="group.be_group_pk">
+                <tr v-show="edit_id !== group.be_group_pk">
+                    <td>[[group.be_group_pk]]</td>
+                    <td>[[group.alias]]</td>
+                    <td>[[group.title]]</td>
+                    <td>[[group.description]]</td>
+                    <td>
+                        <div v-show="edit_id === 0" class="buttons">
+                            {# ToDo(Thorben) Schnell bearbeitung implementieren #}
+                            {# <button v-on:click="edit_id = group.be_group_pk" class="button is-small is-primary">Schnell bearbeiten</button>#}
+                            <button v-on:click="delete_group(group.be_group_pk, index)" class="button is-small is-danger">Löschen</button>
+                            <a v-bind:href="'/backend/app/admin/groups/edit/' + group.be_group_pk" class="button is-small is-info">Vollständig bearbeiten ...</a>
+                        </div>
+                    </td>
+                </tr>
+                <tr v-show="edit_id === group.be_group_pk">
+                    <td>[[group.be_group_pk]]</td>
+                    <td>
+                        <div class="field">
+                            <div class="control">
+                                <label><input v-model="group.alias" class="input is-small is-primary" type="text" placeholder="Alias"></label>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="field">
+                            <div class="control">
+                                <label><input v-model="group.title" class="input is-small is-primary" type="text" placeholder="Titel"></label>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="field">
+                            <div class="control">
+                                <label><input v-model="group.description" class="input is-small is-primary" type="text" placeholder="Beschreibung"></label>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="buttons">
+                            <button v-on:click="edit_id = 0" class="button is-small is-success">Speichern</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <nav class="pagination is-rounded" role="navigation" aria-label="pagination">
+        <a class="pagination-previous">Previous</a>
+        <a class="pagination-next">Next page</a>
+        <ul class="pagination-list">
+
+        </ul>
+    </nav>
+    <transition name="fade">
+        <div class="modal is-active" v-show="is_create_group_modal_open" style="">
+            <div class="modal-background" v-on:click="is_create_group_modal_open = false"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Gruppe erstellen</p>
+                    <button v-on:click="is_create_group_modal_open = false" class="delete" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <form>
+                        <div class="field">
+                            <label class="label" for="form-create-group-alias">Alias</label>
+                            <div class="control">
+                                <input v-model="insert_form_data.alias" id="form-create-group-alias" class="input" type="text" placeholder="administratoren">
+                            </div>
+                            <p class="help">Der Alias darf nur einmal existieren, keine Sonderzeichen und keine Großbuchstaben. Ein Unterstrich (_) ist erlaubt.</p>
+                        </div>
+                        <div class="field">
+                            <label class="label" for="form-create-group-title">Titel</label>
+                            <div class="control">
+                                <input v-model="insert_form_data.title" id="form-create-group-title" class="input" type="text" placeholder="Administratoren, Gäste oder Sonstige">
+                            </div>
+                            <p class="help">Gruppentitel am besten nur ein Wort.</p>
+                        </div>
+                        <div class="field">
+                            <label class="label" for="form-create-group-description">Beschreibung</label>
+                            <div class="control">
+                                <textarea v-model="insert_form_data.description" id="form-create-group-description" class="textarea has-fixed-size" placeholder="Verwaltet die ..."></textarea>
+                            </div>
+                            <p class="help">Eine Beschreibung für was die Gruppe steht.</p>
+                        </div>
+                    </form>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button is-success" v-bind:class="loading ? 'is-loading' : ''" v-on:click="insert_group()" >Gruppe erstellen</button>
+                    <button class="button" v-on:click="is_create_group_modal_open = false">Abbrechen</button>
+                </footer>
+            </div>
+        </div>
+    </transition>
+</div>
+<script>
+    window.backend_app_group_view = new Vue({
+        el: '#backend-group-view-app',
+        delimiters: ["[[","]]"],
+        data: {
+            loading:false,
+            groups:{{ to_json_object(groups) | raw }},
+            is_create_group_modal_open:false,
+            processing_insert:false,
+            insert_form_data:{
+                alias:'',
+                title:'',
+                description:''
+            },
+            edit_id:0
+        },
+        methods:{
+            insert_group:function () {
+                this.loading = true;
+                axios.post('/backend/app/admin/api/group', {
+                    alias:this.insert_form_data.alias,
+                    title:this.insert_form_data.title,
+                    description:this.insert_form_data.description
+                })
+                .then(response => {
+                    console.log(response);
+                    this.groups.push(response.data);
+                })
+                .catch(error => {
+                    console.log(error);
+                }).finally(() => {
+                    this.is_create_group_modal_open = false;
+                    this.loading = false;
+                });
+            },
+            delete_group:function (id, index) {
+                this.loading = true;
+                axios.delete('/backend/app/admin/api/group/' + id)
+                    .then(response => {
+                        console.log(response);
+                        this.groups.splice(index, 1);
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    }).finally(() => {
+                    this.loading = false;
+                });
+            }
+        }
+    });
+</script>

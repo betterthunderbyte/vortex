@@ -1,0 +1,68 @@
+<div id="backend-app-system-install">
+    <table class="table is-bordered is-striped is-fullwidth">
+        <thead>
+            <tr>
+                <th>Alias</th>
+                <th>Version</th>
+                <th>Titel</th>
+                <th>Beschreibung</th>
+                <th>Aktion</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="controller_registry in installable_controller_registries">
+                <td>
+                    [[controller_registry.alias]]
+                </td>
+                <td>
+                    [[controller_registry.version]]
+                </td>
+                <td>
+                    [[controller_registry.title]]
+                </td>
+                <td>
+                    [[controller_registry.description]]
+                </td>
+                <td>
+                    <button v-show="!controller_registry.is_installed" class="button is-success" v-on:click="installController(controller_registry)">Installieren</button>
+                    <button v-show="controller_registry.is_installed" class="button is-danger" v-on:click="uninstallController(controller_registry)">Deinstallieren</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+    window.backend_app_system_updates = new Vue({
+        el: '#backend-app-system-install',
+        delimiters: ["[[","]]"],
+        data:{
+            installable_controller_registries:{{ to_json_object(installable_controller_registries) | raw }}
+        },
+        methods:{
+            installController:function (controller_registry) {
+                this.loading = true;
+                axios.get('/backend/app/system/install/controller/' + controller_registry.alias
+                ).then(response => {
+                    controller_registry.is_installed = true;
+                    console.log(response);
+                }).catch(error => {
+                    console.log(error);
+                }).finally(() => {
+                    this.loading = false;
+                });
+            },
+            uninstallController:function (controller_registry) {
+                this.loading = true;
+                axios.get('/backend/app/system/uninstall/controller/' + controller_registry.alias
+                ).then(response => {
+                    controller_registry.is_installed = false;
+                    console.log(response);
+                }).catch(error => {
+                    console.log(error);
+                }).finally(() => {
+                    this.loading = false;
+                });
+            }
+        }
+    });
+</script>

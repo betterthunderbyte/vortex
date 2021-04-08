@@ -1,0 +1,257 @@
+<div id="backend-bob-update-release-table-app">
+    <div v-show="warning" class="notification is-warning">
+        <button class="delete" v-on:click="warning = false"></button>
+        <span>[[warning_message]]</span>
+    </div>
+
+    <nav class="level">
+        <!-- Left side -->
+        <div class="level-left">
+            <div class="level-item">
+                <p class="subtitle is-5">
+                    Releases
+                </p>
+            </div>
+            <div class="level-item">
+                <div class="field has-addons">
+                    <p class="control">
+                        <input class="input" type="text" placeholder="Finde ein Release">
+                    </p>
+                    <p class="control">
+                        <button class="button">
+                            Suchen
+                        </button>
+                    </p>
+                </div>
+            </div>
+            <p class="level-item"><a href="#" v-on:click.prevent="is_new_release_modal_open = true">Neu</a></p>
+        </div>
+
+        <!-- Right side -->
+        <div class="level-right">
+            <div class="level-item select">
+                <label>
+                    <select>
+                        <option>5</option>
+                        <option>10</option>
+                        <option>25</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+    </nav>
+
+    <div class="table-container">
+        <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Version</th>
+                    <th>Titel</th>
+                    <th>Beschreibung</th>
+                    <th>Patch</th>
+                    <th>Aktion</th>
+                </tr>
+            </thead>
+            <tbody v-for="release in releases">
+                <tr>
+                    <td>[[release.bu_release_pk]]</td>
+                    <td>[[release.version]]</td>
+                    <td>[[release.title]]</td>
+                    <td>[[release.description]]</td>
+                    <td>[[release.is_patch ? 'ja' : 'nein']]</td>
+                    <td>
+                        <div class="buttons">
+                            <button class="button is-small is-info">Bearbeiten</button>
+                            <button class="button is-small is-danger" v-on:click="delete_object = release; is_confirm_deletion_modal_open = true">Entfernen</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div v-show="is_confirm_deletion_modal_open" class="modal is-active">
+        <div class="modal-background" v-on:click="is_confirm_deletion_modal_open = false"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Release löschen?</p>
+                <button class="delete" aria-label="close" v-on:click="is_confirm_deletion_modal_open = false"></button>
+            </header>
+            <section class="modal-card-body">
+                <p>Sind Sie sicher den Release "[[delete_object.title]]" zu löschen?</p>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-danger" v-bind:class="{'is-loading' : loading}" v-on:click="delete_release(delete_object.bu_release_pk)">Ja</button>
+                <button class="button" v-on:click="is_confirm_deletion_modal_open = false">Nein</button>
+            </footer>
+        </div>
+    </div>
+
+    <div v-show="is_new_release_modal_open" class="modal is-active">
+        <div class="modal-background" v-on:click="is_new_release_modal_open = false"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Neues Release</p>
+                <button class="delete" aria-label="close" v-on:click="is_new_release_modal_open = false"></button>
+            </header>
+            <section class="modal-card-body">
+                <progress v-show="loading" class="progress is-primary" v-bind:value="loading_progress" max="100">[loading_progress]%</progress>
+                <form>
+                    <div class="field">
+                        <label for="version" class="label">Version</label>
+                        <div class="control">
+                            <input v-model="version" id="version" class="input" type="text" placeholder="Version">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="title" class="label">Titel</label>
+                        <div class="control">
+                            <input v-model="title" id="title" class="input" type="text" placeholder="Titel">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="description">Beschreibung</label>
+                        <div class="control">
+                            <textarea v-model="description" id="description" class="textarea has-fixed-size" placeholder="..."></textarea>
+                        </div>
+                    </div>
+                    <label class="checkbox">
+                        <input v-model="is_patch" type="checkbox">
+                        Ist das ein Patch?
+                    </label>
+                    <div class="file has-name is-fullwidth">
+                        <label class="file-label">
+                            <input class="file-input" type="file" name="backend_archive" v-on:change="process_backend_file_select($event)">
+                            <span class="file-cta">
+                              <span class="file-icon">
+                                <i class="fas fa-upload"></i>
+                              </span>
+                              <span class="file-label">
+                                Backend Archive
+                              </span>
+                            </span>
+                            <span class="file-name">
+                              [[backend_archive_name]]
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="file has-name is-fullwidth">
+                        <label class="file-label">
+                            <input class="file-input" type="file" name="frontend_archive" v-on:change="process_frontend_file_select($event)">
+                            <span class="file-cta">
+                              <span class="file-icon">
+                                <i class="fas fa-upload"></i>
+                              </span>
+                              <span class="file-label">
+                                Frontend Archive
+                              </span>
+                            </span>
+                            <span class="file-name">
+                              [[frontend_archive_name]]
+                            </span>
+                        </label>
+                    </div>
+                </form>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" v-bind:class="{'is-loading' : loading}" v-on:click="upload_files()">Erstellen</button>
+                <button class="button" v-on:click="is_new_release_modal_open = false">Abbrechen</button>
+            </footer>
+        </div>
+        <button class="modal-close is-large" aria-label="close"></button>
+    </div>
+</div>
+<script>
+    var backend_bob_update_release_table_app = new Vue({
+        el: '#backend-bob-update-release-table-app',
+        delimiters: ["[[","]]"],
+        data: {
+            loading:false,
+            loading_progress:0,
+            backend_archive_name:"Keine Datei ausgewählt!",
+            backend_archive_file:null,
+            frontend_archive_name:"Keine Datei ausgewählt!",
+            frontend_archive_file:null,
+            version:"",
+            title:"",
+            description:"",
+            is_patch:"",
+            is_new_release_modal_open:false,
+            is_confirm_deletion_modal_open:false,
+            delete_object:{},
+            releases:{{ to_json_object(releases) | raw }},
+            warning:false,
+            warning_message:""
+        },
+        methods:{
+            process_backend_file_select:function (eve) {
+                this.backend_archive_name = eve.target.files[0].name;
+                this.backend_file_archive = eve.target.files[0];
+            },
+            process_frontend_file_select:function (eve) {
+                this.frontend_archive_name = eve.target.files[0].name;
+                this.frontend_file_archive = eve.target.files[0];
+            },
+            delete_release:function(id){
+                this.loading = true;
+                axios.delete('/backend/app/bobupdate/api/release/' + id
+                ).then(function (response) {
+                    var a = backend_bob_update_release_table_app;
+                    a.releases.splice(a.releases.indexOf(a.delete_object))
+                }).catch(function (error) {
+                    if("message" in error.response.data)
+                    {
+                        backend_bob_update_release_table_app.warning = true;
+                        backend_bob_update_release_table_app.warning_message = error.response.data["message"];
+                    }
+                }).finally(function () {
+                    backend_bob_update_release_table_app.loading = false;
+                    backend_bob_update_release_table_app.is_confirm_deletion_modal_open = false;
+                });
+            },
+            upload_files:function () {
+                var form_data = new FormData();
+                form_data.append('backend_file', this.backend_file_archive);
+                form_data.append('frontend_file', this.frontend_file_archive);
+                form_data.append('version', this.version);
+                form_data.append('title', this.title);
+                form_data.append('description', this.description);
+                form_data.append('is_patch', this.is_patch);
+                this.loading = true;
+                axios.post('/backend/app/bobupdate/api/release', form_data, {
+                    headers:{
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    onUploadProgress:function (progressEvent) {
+                        backend_bob_update_release_table_app.loading_progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    }
+                }).then(function (response) {
+                    console.log(response);
+                    backend_bob_update_release_table_app.releases.push(response.data);
+                }).catch(function (error) {
+                    backend_bob_update_release_table_app.is_new_release_modal_open = false;
+                    if(error.response.status === 400)
+                    {
+                        if("message" in error.response.data)
+                        {
+                            backend_bob_update_release_table_app.warning = true;
+                            backend_bob_update_release_table_app.warning_message = error.response.data["message"];
+                        }
+                    }
+                    else
+                    {
+                        backend_bob_update_release_table_app.warning = true;
+                        backend_bob_update_release_table_app.warning_message = "Es ist was schlimmes passiert! Versuche es später erneut!";
+                    }
+                }).finally(function () {
+                    backend_bob_update_release_table_app.loading = false;
+                    backend_bob_update_release_table_app.is_new_release_modal_open = false;
+                });
+            }
+        }
+    });
+</script>

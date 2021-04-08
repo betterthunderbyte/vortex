@@ -1,0 +1,173 @@
+<div id="backend-system-settings-app">
+    <div class="tile is-ancestor">
+
+        <div class="tile is-4 is-vertical is-parent">
+            <div class="tile is-child box">
+                <h3 class="title">Controller Einstellung</h3>
+                <div class="field">
+                    <label class="label" for="default_controller">Standard Controller</label>
+                    <div class="select is-fullwidth" v-bind:class="{'is-loading' : loading}">
+                        <select name="default_controller" id="default_controller" v-model="settings.default_controller" v-on:change="save({default_controller:settings.default_controller})">
+
+                            <option v-for="controller in controllers" v-bind:value="controller.alias">
+                                [[controller.title]]
+                            </option>
+
+                        </select>
+                    </div>
+                    <p class="help">
+                        Der Standard Controller der genutzt werden soll. Bestimmt die Weiterleitung.
+                    </p>
+                </div>
+            </div>
+
+            <div class="tile is-child box">
+                <h3 class="title">Sonstiges</h3>
+                <div class="field">
+                    <label class="label" for="master_password">Hauptpasswort</label>
+                    <div class="field has-addons">
+                        <div class="control is-expanded">
+                            <input v-model="new_master_password" id="master_password" class="input" type="text" placeholder="Neues Passwort ...">
+                        </div>
+                        <div class="control">
+                            <button class="button is-success" v-bind:class="{'is-loading' : loading}" v-on:click="save({master_password:new_master_password})">Speichern</button>
+                        </div>
+                    </div>
+                    <p class="help">Dieses Passwort wird genutzt, wenn es keine Datenbankverbindung gibt. Wird zum Installieren benötigt. Außerdem wird es gehasht.</p>
+                </div>
+                <div class="field">
+                    <label class="label" for="secret">Geheimnis</label>
+                    <div class="field has-addons">
+                        <div class="control is-expanded">
+                            <input v-model="settings.secret" id="secret" class="input"  v-bind:type="secret_hidden ? 'password' : 'text'">
+                        </div>
+                        <div class="control">
+                            <button class="button is-success" v-bind:class="{'is-loading' : loading}" v-on:click="save({secret:settings.secret})">Speichern</button>
+                        </div>
+                    </div>
+                    <p class="help">
+                        <span class="icon is-small">
+                            <a v-show="!secret_hidden" class="mdi mdi-eye icon is-small" v-on:click="secret_hidden = true"></a>
+                            <a v-show="secret_hidden" class="mdi mdi-eye-off icon is-small" v-on:click="secret_hidden = false"></a>
+                        </span>
+                        Dieser Wert ist für Verschlüsselung zuständig.
+                    </p>
+                </div>
+                <div class="field">
+                    <label class="checkbox">
+                        <input type="checkbox" v-model="settings.cache" v-on:change="save({cache:settings.cache})">
+                        Cache nutzen?
+
+                    </label>
+                    <p class="help">Wenn der Cache aktiv ist dann wird die Seite schneller aufgebaut. Aber Änderungen können nicht übernommen werden.</p>
+                </div>
+                <div class="field">
+                    <label class="checkbox">
+                        <input type="checkbox" v-model="settings.debug" v-on:change="save({debug:settings.debug})">
+                        Debugging nutzen?
+                    </label>
+                    <p class="help">Wenn Debug aktiv ist werden Fehlermeldungen angezeigt und die Vorgänge werden überprüft. Macht den Seitenaufbau sehr langsam und ist nur für Entwickler gedacht.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tile is-parent is-vertical">
+            <div class="tile is-child box">
+                <h3 class="title">Datenbank Einstellungen</h3>
+                <h4 class="subtitle">Achtung! Es muss hinterher die Datenbank neu installiert werden und dafür brauchen Sie das Hauptpasswort!</h4>
+                <div class="field">
+                    <label class="label" for="db_host">Host-Adresse</label>
+                    <div class="control">
+                        <input id="db_host" class="input" type="text" v-model="settings.db_host" >
+                    </div>
+                    <p class="help">Die Adresse zu der Datenbank. Beim Wechsel muss das System die Datenbank erstellen.</p>
+                </div>
+                <div class="field">
+                    <label class="label" for="db_user">Benutzer</label>
+                    <div class="control">
+                        <input id="db_user" class="input" type="text" v-model="settings.db_user" >
+                    </div>
+                    <p class="help">Der Benutzer der genügend Zugriffsrechte besitzt.</p>
+                </div>
+                <div class="field">
+                    <label class="label" for="db_password">Passwort</label>
+                    <div class="control">
+
+                        <input id="db_password" class="input" v-bind:type="db_password_hidden ? 'password' : 'text'" type="password" v-model="settings.db_password" >
+
+                    </div>
+                    <p class="help">
+                        <span class="icon is-small">
+                            <a v-show="!db_password_hidden" class="mdi mdi-eye icon is-small" v-on:click="db_password_hidden = true"></a>
+                            <a v-show="db_password_hidden" class="mdi mdi-eye-off icon is-small" v-on:click="db_password_hidden = false"></a>
+                        </span>
+
+                        Das Passwort vom Benutzer zu der Datenbank.
+                    </p>
+                </div>
+                <div class="field">
+                    <p class="control">
+                        <button class="button is-success" v-bind:class="{'is-loading' : loading}" v-on:click="save({db_host:settings.db_host,db_user:settings.db_user,db_password:settings.db_password})">
+                            Änderung speichern
+                        </button>
+                    </p>
+                </div>
+            </div>
+
+            <div class="tile is-child box">
+                <h3 class="title">Update Server</h3>
+                <div class="field">
+                    <label class="label" for="update_server">Host-Adresse</label>
+                    <div class="control">
+                        <input id="update_server" class="input" type="text" v-model="settings.update_server" >
+                    </div>
+                    <p class="help">Die Adresse zum Update Server, um sich die neusten Inhalte runterzuladen.</p>
+                </div>
+                <div class="field">
+                    <label class="label" for="product_key">Produktschlüssel</label>
+                    <div class="control">
+                        <input id="product_key" class="input" type="text" v-model="settings.product_key">
+                    </div>
+                    <p class="help">Der Produktschlüssel, der einen dazu berechtigt, Zugriff auf den Updatenserver zu bekommen.</p>
+                </div>
+                <div class="field">
+                    <p class="control">
+                        <button class="button is-success" v-bind:class="{'is-loading' : loading}" v-on:click="save({update_server:settings.update_server, product_key:settings.product_key})">
+                            Änderung speichern
+                        </button>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script>
+    window.backend_app_system_settings = new Vue({
+        el: '#backend-system-settings-app',
+        delimiters: ["[[","]]"],
+        data: {
+            loading:false,
+            new_master_password:"",
+            controllers:{{ to_json_object(controllers) | raw }},
+            settings:{{ to_json_object(settings) | raw }},
+            db_password_hidden:true,
+            secret_hidden:true,
+        },
+        methods:{
+            save:function (data) {
+                this.loading = true;
+                axios.post('/backend/app/system/api/settings',
+                data
+                ).then(response => {
+                    console.log(response);
+                }).catch(error => {
+                    console.log(error);
+                }).finally(() => {
+                    this.loading = false;
+                });
+            }
+        },
+
+    });
+</script>

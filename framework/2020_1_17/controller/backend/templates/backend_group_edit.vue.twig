@@ -1,0 +1,327 @@
+<div id="backend-group-edit-app">
+    <h1 class="title">Gruppe bearbeiten</h1>
+    <h2 class="subtitle">Hier können Sie die Gruppendetails ändern.</h2>
+    <form>
+        <div class="field">
+            <label class="label" for="form-create-group-alias">Alias</label>
+            <div class="control">
+                <input v-model="group.alias" id="form-create-group-alias" class="input" type="text" placeholder="administratoren">
+            </div>
+            <p class="help">Der Alias darf nur einmal existieren, keine Sonderzeichen und keine Großbuchstaben. Ein Unterstrich (_) ist erlaubt.</p>
+        </div>
+        <div class="field">
+            <label class="label" for="form-create-group-title">Titel</label>
+            <div class="control">
+                <input v-model="group.title" id="form-create-group-title" class="input" type="text" placeholder="Administratoren, Gäste oder Sonstige">
+            </div>
+            <p class="help">Gruppentitel am besten nur ein Wort.</p>
+        </div>
+        <div class="field">
+            <label class="label" for="form-create-group-description">Beschreibung</label>
+            <div class="control">
+                <textarea v-model="group.description" id="form-create-group-description" class="textarea has-fixed-size" placeholder="Verwaltet die ..."></textarea>
+            </div>
+            <p class="help">Eine Beschreibung für was die Gruppe steht.</p>
+        </div>
+    </form>
+    <h1 class="title">Rechte bearbeiten</h1>
+    <h2 class="subtitle">Hier können Rechte hinzugefügt werden und entfernt werden.</h2>
+    <nav class="level">
+        <div class="level-left">
+            <p class="level-item">Rechte</p>
+            <div class="level-item">
+                <div class="field has-addons">
+                    <p class="control">
+                        <label>
+                            <input v-model="permission_search" class="input" type="text" placeholder="Recht finden">
+                        </label>
+                    </p>
+                    <p class="control">
+                        <button class="button">
+                            Suchen
+                        </button>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="level-right">
+            <div class="level-item select">
+                <label>
+                    <select v-model="permission_limit" v-on:change="permission_page = 1; load_permissions()">
+                        <option>5</option>
+                        <option>10</option>
+                        <option>25</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+    </nav>
+    <progress v-show="!loading" class="progress is-small is-primary" max="100" value="0">0%</progress>
+    <progress v-show="loading" class="progress is-small is-primary" max="100">0%</progress>
+    <div class="table-container">
+        <table class="table is-bordered is-striped is-fullwidth">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Alias</th>
+                    <th>Titel</th>
+                    <th>Beschreibung</th>
+                    <th>Aktion</th>
+                </tr>
+            </thead>
+            <tbody v-for="permission in permissions" v-bind:key="permission.be_permission_pk">
+                <tr>
+                    <td>[[permission.be_permission_pk]]</td>
+                    <td>[[permission.alias]]</td>
+                    <td>[[permission.title]]</td>
+                    <td>[[permission.description]]</td>
+                    <td>
+                        <button v-show="permission.group_use === 1" class="button is-danger is-small" v-bind:class="{'is-loading' : loading}" v-on:click="disconnect_permission_with_group(permission, group.be_group_pk)">Entfernen</button>
+                        <button v-show="permission.group_use === 0" class="button is-success is-small" v-bind:class="{'is-loading' : loading}" v-on:click="connect_permission_with_group(permission, group.be_group_pk)">Hinzufügen</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <nav class="pagination is-rounded" role="navigation" aria-label="pagination">
+        <a class="pagination-previous" v-on:click.prevent="prev_permission_page()" v-bind:disabled="permission_page === 1">Vorige Seite</a>
+        <a class="pagination-next" v-on:click.prevent="next_permission_page()" v-bind:disabled="permission_page === calculate_permission_max_page_number()">Nächste Seite</a>
+        <ul class="pagination-list">
+
+        </ul>
+    </nav>
+
+    <h1 class="title">Mitglieder bearbeiten</h1>
+    <h2 class="subtitle">Hier können die Mitglieder zu der Gruppe hinzugefügt werden oder entfernt werden. Ein Mitglied kann nur einer Gruppe angehören.</h2>
+    <nav class="level">
+        <div class="level-left">
+            <p class="level-item">Mitglieder</p>
+            <div class="level-item">
+                <div class="field has-addons">
+                    <p class="control">
+                        <label>
+                            <input v-model="member_search" class="input" type="text" placeholder="Mitglied finden">
+                        </label>
+                    </p>
+                    <p class="control">
+                        <button class="button">
+                            Suchen
+                        </button>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="level-right">
+            <div class="level-item select">
+                <label>
+                    <select v-model="member_limit" v-on:change="member_page = 1; load_members()">
+                        <option>5</option>
+                        <option>10</option>
+                        <option>25</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+    </nav>
+    <div class="table-container">
+        <table class="table is-bordered is-striped is-fullwidth">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Vorname</th>
+                <th>Nachname</th>
+                <th>E-Mail</th>
+                <th>Aktion</th>
+            </tr>
+            </thead>
+            <tbody v-for="member in members" v-bind:key="member.be_member_pk">
+            <tr>
+                <td>[[member.be_member_pk]]</td>
+                <td>[[member.given_name]]</td>
+                <td>[[member.surname]]</td>
+                <td>[[member.email]]</td>
+                <td>
+                    <button v-show="member.group_fk === group.be_group_pk" v-on:click="connect_member_to_group(member, 0)" class="button is-danger is-small" v-bind:class="{'is-loading' : loading}">Entfernen</button>
+                    <button v-show="member.group_fk !== group.be_group_pk" v-on:click="connect_member_to_group(member, group.be_group_pk)" class="button is-success is-small" v-bind:class="{'is-loading' : loading}">Hinzufügen</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <nav class="pagination is-rounded" role="navigation" aria-label="pagination">
+        <a class="pagination-previous" v-on:click.prevent="prev_member_page()" v-bind:disabled="member_page === 1">Vorige Seite</a>
+        <a class="pagination-next" v-on:click.prevent="next_member_page()" v-bind:disabled="member_page === calculate_member_max_page_number()">Nächste Seite</a>
+        <ul class="pagination-list">
+
+        </ul>
+    </nav>
+</div>
+
+<script>
+    window.backend_app_group_edit = new Vue({
+        el: '#backend-group-edit-app',
+        delimiters: ["[[","]]"],
+        data: {
+            loading:false,
+            permissions:{{ to_json_object(permissions) | raw }},
+            permission_page:1,
+            permission_limit:10,
+            permission_max_count:{{ permission_count }},
+            permission_search:"",
+            group:{{ to_json_object(group) | raw }},
+            members:{{ to_json_object(members) | raw }},
+            member_max_count:{{ member_count }},
+            member_page:1,
+            member_limit:10,
+            member_count:0,
+            member_search:""
+        },
+        methods:{
+            connect_permission_with_group:function(permission, group_id) {
+                this.loading = true;
+                axios.post('/backend/app/admin/api/group/' + group_id, {'permission_id':permission.be_permission_pk})
+                    .then(response => {
+                        permission.group_use = 1;
+                    }).catch(error => {
+                    if(error.code === "ECONNABORTED")
+                    {
+
+                    }
+                }).finally(() => {
+                    this.loading = false;
+                })
+            },
+            disconnect_permission_with_group:function(permissions, group_id) {
+                this.loading = true;
+                axios.delete('/backend/app/admin/api/group/' + group_id + '/' + permissions.be_permission_pk)
+                    .then(response => {
+                        permissions.group_use = 0;
+                    }).catch(error => {
+                    if(error.code === "ECONNABORTED")
+                    {
+
+                    }
+                }).finally(() => {
+                    this.loading = false;
+                })
+            },
+            load_permissions:function () {
+                this.loading = true;
+                axios.get('/backend/app/admin/api/permissions/' + this.group.be_group_pk + '/' + this.permission_limit + '/' + this.permission_page, {timeout:2000})
+                .then(response => {
+                    this.permissions = response.data['permissions'];
+                    this.permission_max_count = response.data['max_count'];
+
+                }).catch(error => {
+                    if(error.code === "ECONNABORTED")
+                    {
+
+                    }
+                }).finally(() => {
+                    this.loading = false;
+                })
+            },
+            load_permission_count:function () {
+                this.loading = true;
+                axios.get('/backend/app/admin/api/permissions/count')
+                    .then(response => {
+
+                    })
+                    .catch(error => {
+
+                    }).finally(() => {
+                        this.loading = false;
+                    })
+            },
+            load_members:function(){
+                this.loading = true;
+                axios.get('/backend/app/admin/api/members/' + this.member_limit + '/' + this.member_page, {timeout:2000})
+                    .then(response => {
+                        this.members = response.data['members'];
+                        this.member_max_count = response.data['max_count'];
+                    }).catch(error => {
+                    if(error.code === "ECONNABORTED")
+                    {
+
+                    }
+                }).finally(() => {
+                    this.loading = false;
+                })
+            },
+            connect_member_to_group:function(member_object, group_id){
+                this.loading = true;
+                axios.post('/backend/app/admin/api/member/' + member_object.be_member_pk, {'group_id':group_id})
+                    .then(response => {
+                        member_object.group_fk = group_id;
+                    }).catch(error => {
+                    if(error.code === "ECONNABORTED")
+                    {
+
+                    }
+                    }).finally(() => {
+                        this.loading = false;
+                    })
+            },
+            next_permission_page:function () {
+                if(this.permission_page === this.calculate_permission_max_page_number())
+                {
+                    return;
+                }
+
+                this.permission_page += 1;
+
+                this.load_permissions();
+            },
+            prev_permission_page:function () {
+                if(this.permission_page === 1)
+                {
+                    return;
+                }
+                this.permission_page -= 1;
+
+                this.load_permissions();
+            },
+            next_member_page:function(){
+                if(this.member_page === this.calculate_member_max_page_number())
+                {
+                    return;
+                }
+
+                this.member_page += 1;
+                this.load_members();
+            },
+            prev_member_page:function(){
+                if(this.member_page === 1)
+                {
+                    return;
+                }
+                this.member_page -= 1;
+
+                this.load_members();
+            },
+            calculate_permission_max_page_number:function () {
+                if(this.permission_max_count === 0)
+                {
+                    return 1;
+                }
+
+                return Math.ceil(this.permission_max_count / this.permission_limit);
+            },
+            calculate_member_max_page_number:function () {
+                if(this.member_max_count === 0)
+                {
+                    return 1;
+                }
+
+                return Math.ceil(this.member_max_count / this.member_limit);
+            }
+        }
+    });
+
+</script>

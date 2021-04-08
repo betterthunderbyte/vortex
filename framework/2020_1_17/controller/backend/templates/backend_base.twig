@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+        <link rel="icon" href="{{ base_url }}/assets/favicon.svg" type="image/svg+xml">
+        <title>{{ title }}</title>
+
+        <link rel="stylesheet" href="{{ base_url }}/assets/bulma/css/bulma.css">
+        <link rel="stylesheet" href="{{ base_url }}/assets/material/css/materialdesignicons.min.css">
+
+        {% if debug_available %}
+            <script src="{{ base_url }}/assets/axios/dist/axios.js"></script>
+            <script src="{{ base_url }}/assets/vue/dist/vue.js"></script>
+        {% else %}
+            <script src="{{ base_url }}/assets/axios/dist/axios.min.js"></script>
+            <script src="{{ base_url }}/assets/vue/dist/vue.min.js"></script>
+        {% endif %}
+
+        {{head | raw}}
+        <style>
+            body {
+                display: flex;
+                min-height: 100vh;
+                flex-direction: column;
+                font-family: 'Nunito', sans-serif;
+            }
+
+            .fade-enter-active, .fade-leave-active {
+                transition: opacity .5s;
+            }
+            .fade-enter, .fade-leave-to {
+                opacity: 0;
+            }
+        </style>
+    </head>
+{% flush %}
+    <body>
+
+    {{body | raw}}
+
+    {{script | raw}}
+    </body>
+</html>

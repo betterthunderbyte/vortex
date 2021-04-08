@@ -1,0 +1,123 @@
+<h3>Anforderungen</h3>
+<ul>
+<li>Debian 10 (Buster) Server</li>
+<li>WAN-Zugang</li>
+</ul>
+<h3>Rechnerinformationen</h3>
+<ul>
+<li>Rechnername: Sync</li>
+<li>Domain: kuhlmann-its.de</li>
+<li>Standart Benutzer: api</li>
+<li>Speicherplatz: 16 GB</li>
+<li>RAM: 1 GB</li>
+<li>CPU-Cores: 2</li>
+</ul>
+<h3>Installation</h3>
+<pre><code class="language-text">apt update
+apt upgrade</code></pre>
+<h4>Apache 2</h4>
+<pre><code class="language-text">apt install apache2</code></pre>
+<h4>Datei /etc/apache2/envvars öffnen</h4>
+<ul>
+<li>export 'APACHE_RUN_USER=www-data' in 'export APACHE_RUN_USER=api' umbenennen</li>
+<li>export 'APACHE_RUN_GROUP=www-data' in 'export APACHE_RUN_GROUP=api' umbenennen</li>
+</ul>
+<h4>Datei /etc/apache2/apache2.conf öffnen</h4>
+<pre><code class="language-apacheconfig">&lt;Directory /&gt;
+       Options FollowSymLinks
+       AllowOverride None
+       Require all denied
+&lt;/Directory&gt;
+
+&lt;Directory /usr/share&gt;
+       AllowOverride None
+       Require all granted
+&lt;/Directory&gt;</code></pre>
+<p>auskommentieren.</p>
+<pre><code class="language-apacheconfig">&lt;Directory /var/www/html&gt;
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Require all granted
+&lt;/Directory&gt;</code></pre>
+<p>änderrn in </p>
+<pre><code class="language-apacheconfig">
+&lt;Directory /home/api/www&gt;
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride All
+        Require all granted
+&lt;/Directory&gt;
+</code></pre>
+<h4>Datei /etc/apache2/sites-available/000-default.conf öffnen</h4>
+<pre><code class="language-apacheconfig">
+DocumentRoot /var/www/html
+</code></pre>
+<p>in </p>
+<pre><code class="language-apacheconfig">
+ DocumentRoot /home/api/www
+</code></pre>
+<p>ändern.</p>
+<p>Als letztes den Ordner /home/api/www erstellen</p>
+<h4>Rewrite Engine aktivieren</h4>
+<pre><code class="language-text">/sbin/a2enmod rewrite</code></pre>
+<h3>Apache2 befehle</h3>
+<pre><code class="language-text">systemctl start apache2
+
+systemctl restart apache2
+
+systemctl stop apache2
+
+systemctl reload apache2
+
+systemctl status apache2</code></pre>
+<h3>Mariadb installieren</h3>
+<pre><code class="language-text">apt install mariadb-server</code></pre>
+<h4>Nutzer anlegen</h4>
+<pre><code class="language-text">mariadb </code></pre>
+<pre><code class="language-sql">
+CREATE USER 'api'@'localhost' IDENTIFIED BY '123asd!';
+CREATE USER 'api'@'%' IDENTIFIED BY '123asd!';
+
+GRANT ALL ON *.* TO 'api'@'localhost';
+GRANT ALL ON *.* TO 'api'@'%';
+
+flush privileges;
+
+update mysql.user set plugin='' where user='api'; 
+flush privileges;
+
+grant all on *.* to api@localhost identified by '123asd!' with grant option;
+flush privileges;
+
+exit();
+</code></pre>
+<h3>PHP installieren</h3>
+<pre><code class="language-text">apt install php libapache2-mod-php php-cli php-fpm php-json php-pdo php-mysql php-zip php-gd  php-mbstring php-curl php-xml php-pear php-bcmath</code></pre>
+<h3>Composer Installieren</h3>
+<pre><code class="language-text">curl -sS https://getcomposer.org/installer | php</code></pre>
+<pre><code class="language-text">mv composer.phar /usr/local/bin/composer
+chmod +x /usr/local/bin/composer</code></pre>
+<h3>Entwicklertools installieren</h3>
+<h4>PHP-Storm Datenbank Verbindung</h4>
+<p>In der Datei '/etc/mysql/my.cnf' diese Zeilen am Ende einfügen</p>
+<pre><code class="language-apacheconfig">
+[mysqld]
+
+skip-networking=0
+
+skip-bind-address
+</code></pre>
+<h4>XDebug Installieren</h4>
+<pre><code class="language-text">apt install php-xdebug</code></pre>
+<h4>XDebug Einrichten</h4>
+<pre><code class="language-text">
+[xdebug]
+xdebug.remote_autostart=1
+xdebug.remote_enable=1
+xdebug.remote_host="192.168.252.111"
+xdebug.remote_port=9000
+xdebug.idekey="PHPSTORM"
+xdebug.remote_log=/home/api/www/log/xdebug.log
+xdebug.remote_connect_back=1
+</code></pre>
+<p>bei 'xdebug.remote_host' die IP-Adresse eingeben der Debuggen soll, also eigener Rechner.</p>
+<p>Achtung! Wenn der Ordner bei 'xdebug.remote_log' nicht existiert funktioniert XDebug nicht!</p>

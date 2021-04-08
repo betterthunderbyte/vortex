@@ -1,0 +1,144 @@
+<div id="backend-bob-update-customer-table-app">
+    <div v-show="warning" class="notification is-warning">
+        <button class="delete" v-on:click="warning = false"></button>
+        <span>[[warning_message]]</span>
+    </div>
+
+    <nav class="level">
+        <!-- Left side -->
+        <div class="level-left">
+            <div class="level-item">
+                <p class="subtitle is-5">
+                    Kunden
+                </p>
+            </div>
+            <div class="level-item">
+                <div class="field has-addons">
+                    <p class="control">
+                        <input class="input" type="text" placeholder="Finde ein Kunde">
+                    </p>
+                    <p class="control">
+                        <button class="button">
+                            Suchen
+                        </button>
+                    </p>
+                </div>
+            </div>
+            <p class="level-item"><a href="#" v-on:click.prevent="is_new_customer_modal_open = true">Neu</a></p>
+        </div>
+
+        <!-- Right side -->
+        <div class="level-right">
+            <div class="level-item select">
+                <label>
+                    <select>
+                        <option>5</option>
+                        <option>10</option>
+                        <option>25</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+    </nav>
+
+    <div class="table-container">
+        <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Zuletzt Online</th>
+                <th>Momentane Version</th>
+                <th>Produktschlüssel</th>
+                <th>Aktion</th>
+            </tr>
+            </thead>
+            <tbody v-for="customer in customers">
+            <tr>
+                <td>[[customer.bu_customer_pk]]</td>
+                <td>[[customer.name]]</td>
+                <td>[[customer.last_online_time]]</td>
+                <td>[[customer.version]]</td>
+                <td>[[customer.product_key]]</td>
+                <td>
+                    <div class="buttons">
+                        <button class="button is-small is-info">Bearbeiten</button>
+                        <button class="button is-small is-danger" v-on:click="delete_object = release; is_confirm_deletion_modal_open = true">Entfernen</button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div v-show="is_confirm_deletion_modal_open" class="modal is-active">
+        <div class="modal-background" v-on:click="is_confirm_deletion_modal_open = false"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Release löschen?</p>
+                <button class="delete" aria-label="close" v-on:click="is_confirm_deletion_modal_open = false"></button>
+            </header>
+            <section class="modal-card-body">
+                <p>Sind Sie sicher den Release "[[delete_object.title]]" zu löschen?</p>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-danger" v-bind:class="{'is-loading' : loading}" v-on:click="delete_release(delete_object.bu_release_pk)">Ja</button>
+                <button class="button" v-on:click="is_confirm_deletion_modal_open = false">Nein</button>
+            </footer>
+        </div>
+    </div>
+
+    <div v-show="is_new_customer_modal_open" class="modal is-active">
+        <div class="modal-background" v-on:click="is_new_customer_modal_open = false"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Neuer Kunde</p>
+                <button class="delete" aria-label="close" v-on:click="is_new_customer_modal_open = false"></button>
+            </header>
+            <section class="modal-card-body">
+                <progress v-show="loading" class="progress is-primary" v-bind:value="loading_progress" max="100">[loading_progress]%</progress>
+                <form>
+                    <div class="field">
+                        <label for="name" class="label">Name</label>
+                        <div class="control">
+                            <input v-model="customer_name" id="name" class="input" type="text" placeholder="Name">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="customer_product_key" class="label">Produktschlüssel</label>
+                        <div class="control">
+                            <input v-model="customer_product_key" id="customer_product_key" class="input" type="text" placeholder="Produktschlüssel">
+                        </div>
+                    </div>
+                </form>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" v-bind:class="{'is-loading' : loading}" v-on:click="">Erstellen</button>
+                <button class="button" v-on:click="is_new_customer_modal_open = false">Abbrechen</button>
+            </footer>
+        </div>
+        <button class="modal-close is-large" aria-label="close"></button>
+    </div>
+</div>
+<script>
+    var backend_bob_update_customer_table_app = new Vue({
+        el: '#backend-bob-update-customer-table-app',
+        delimiters: ["[[","]]"],
+        data: {
+            loading:false,
+            loading_progress:0,
+            is_new_customer_modal_open:false,
+            is_confirm_deletion_modal_open:false,
+            delete_object:{},
+            customers:{{ to_json_object(customers) | raw }},
+            warning:false,
+            warning_message:"",
+            customer_name:"",
+            customer_product_key:""
+        },
+        methods:{
+        }
+    });
+</script>

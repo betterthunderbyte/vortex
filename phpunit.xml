@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.1/phpunit.xsd"
+         bootstrap="import.php"
+         executionOrder="depends,defects"
+         forceCoversAnnotation="false"
+         beStrictAboutCoversAnnotation="false"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTodoAnnotatedTests="true"
+         verbose="true">
+    <testsuites>
+        <testsuite name="core">
+            <directory suffix="Test.php">framework/2020_1_17/tests</directory>
+        </testsuite>
+        <testsuite name="backend">
+            <directory suffix="Test.php">framework/2020_1_17/controller/backend/tests</directory>
+        </testsuite>
+        <testsuite name="sync">
+            <directory suffix="Test.php">framework/2020_1_17/controller/sync/tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">framework/2020_1_17</directory>
+        </whitelist>
+    </filter>
+</phpunit>
