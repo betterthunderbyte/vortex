@@ -4,8 +4,8 @@
     "db_password": "123asd!",
     "debug": true,
     "default_controller": "backend",
-    "master_password": "$argon2i$v=19$m=65536,t=4,p=1$bHg5bVN2NzRTaWhsWEhBdQ$qs11mt4YURh9qkC6gXpOxjp5tXxifh97Vw3BV28nGmY",
-    "secret": "123asd!",
+    "master_password": "",
+    "secret": "",
     "cache": false,
     "update_server": "",
     "product_key": ""
